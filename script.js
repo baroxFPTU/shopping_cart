@@ -16,7 +16,7 @@ const vat = document.querySelector('.vat span');
 const discountElm = document.querySelector('.discount');
 const discountSpan = document.querySelector('.discount span');
 const total = document.querySelector('.total span');
-
+const promotiontBtn = document.querySelector('.promotion button');
 let products;
 
 // Get the list products from database;
@@ -44,6 +44,19 @@ count:count})
 }
 
 const app = {
+    promotionCode: {
+        ABC: 20,
+        CDF: 50
+    },
+    checkPromotion() {
+        let value = document.querySelector('#promo-code').value;
+         console.log(value);
+        if (this.promotionCode[value]) {
+            return this.promotionCode[value];
+        }
+        return undefined;
+    }
+    ,
     renderUI(products) {
         // console.log(this.convertMoney(23))
         productsElm.innerHTML = '';
@@ -99,12 +112,21 @@ const app = {
     },
     updateTotalMoney(array) {
         let totalMoney = Array.from(array).reduce((acc, item) => acc+=(item.count*item.price), 0);
+        let discount = 0;
+        let value = this.checkPromotion();
+        if (value) {
+            discount = (totalMoney * value )/100;
+            discountElm.classList.remove('hide');
+            discountSpan.innerText = this.convertMoney(discount);
+        }
 
         subTotal.innerText = this.convertMoney(totalMoney);
         vat.innerText = this.convertMoney(totalMoney * 0.05)
-        total.innerText = this.convertMoney(totalMoney*1.05)
+        total.innerText = this.convertMoney(totalMoney*1.05 - discount)
     },
     handeEvents() {
+        const _this = this;
+
         productsElm.onclick = (e) => {
             let removeElm = e.target.closest('.remove span');
             if (removeElm) {
@@ -119,6 +141,10 @@ const app = {
                 console.log(inputElm.value)
                changeCountItem(id,+inputElm.value);
             }
+        }
+
+        promotiontBtn.onclick = () => {
+            _this.updateTotalMoney(products);
         }
     },
     start() {
